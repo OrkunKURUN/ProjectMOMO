@@ -1,0 +1,26 @@
+<resources>
+    <string name="app_name">AutoCrashHistory</string>
+    <string name="sign_in">SIGN IN</string>
+    <string name="username">Username</string>
+    <string name="password">Password</string>
+    <string name="sign_up">SIGN UP</string>
+    <string name="password_check">Password(check)</string>
+    <string name="search_record">SEARCH RECORD</string>
+    <string name="add_record">ADD RECORD</string>
+    <string name="edit_record">EDIT RECORD</string>
+    <string name="settings">SETTINGS</string>
+    <string name="account_settings">ACCOUNT SETTINGS</string>
+    <string name="change_username">CHANGE USERNAME</string>
+    <string name="quit">QUIT</string>
+    <string name="enter_vin_of_the_vehicle">Enter VIN of the vehicle:</string>
+    <string name="example_vin">Example: 1GNEK13ZX3R298984</string>
+    <string name="enter_url_of_pictures_of_the_vehicle">Enter URL of pictures of the vehicle itself or inspection report:</string>
+    <string name="example_url">https://galeri5.uludagsozluk.com/2/mahalle-arasinda-yatan-hurda-araba_98674.jpg</string>
+    <string name="enter_id_of_record_to_look">Enter ID of record to look</string>
+    <string name="record_id_numbers_will_shown_here">Record ID numbers will shown here</string>
+    <string name="look_at_record">LOOK AT RECORD</string>
+    <string name="uploaded_by">Uploaded by:</string>
+    <string name="list_of_vin_numbers_you_recorded">List of VIN numbers you recorded:</string>
+    <string name="change_record">CHANGE RECORD</string>
+    <string name="delete">DELETE</string>
+</resources>
