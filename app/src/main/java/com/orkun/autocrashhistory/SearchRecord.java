@@ -14,7 +14,8 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import java.util.ArrayList;
 
-//Example VIN: ABC123
+//Example VIN: ABC123, ABC456
+
 
 public class SearchRecord extends AppCompatActivity {
     private carDatabase dbManager = new carDatabase(this);

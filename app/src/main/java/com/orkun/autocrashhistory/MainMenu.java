@@ -8,6 +8,7 @@ import android.widget.Button;
 import androidx.appcompat.app.AppCompatActivity;
 
 //Example username: example, example password: 123
+//Example username: example2, example password: 456
 
 public class MainMenu extends AppCompatActivity {
     MainActivity firstMenu = new MainActivity();

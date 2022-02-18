@@ -11,6 +11,9 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+
 public class MainActivity extends AppCompatActivity {
 
     private String name;
@@ -18,11 +21,14 @@ public class MainActivity extends AppCompatActivity {
     private final carDatabase dbManager = new carDatabase(this);
     public static String nameActive;
     public static String passwordActive;
+    private DatabaseReference rDatabase;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        rDatabase = FirebaseDatabase.getInstance().getReference();
 
         Button signup = (Button) findViewById(R.id.signUpButton);
         Button signin = (Button) findViewById(R.id.signInButton);

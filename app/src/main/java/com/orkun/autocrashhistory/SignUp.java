@@ -10,16 +10,22 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+
 public class SignUp extends AppCompatActivity {
     private String name;
     private String password;
     private String password2;
     private carDatabase dbManager = new carDatabase(this);
+    private DatabaseReference rDatabase;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.sign_up);
+
+        rDatabase = FirebaseDatabase.getInstance().getReference();
 
         EditText nameInput = (EditText) findViewById(R.id.newUsername);
         EditText passwordInput = (EditText) findViewById(R.id.newPassword);
@@ -49,7 +55,16 @@ public class SignUp extends AppCompatActivity {
     }
     public void addAccount(String name, String password){
         SQLiteDatabase db = dbManager.getWritableDatabase();
+        User user = null;
         db.execSQL("INSERT INTO Users(name, password) VALUES('"+name+"','"+password+"')");
+
+        //pushing into Firebase database:
+        Cursor c = db.rawQuery("SELECT * FROM Users WHERE name = '" + name + "';",null);
+        String id = rDatabase.push().getKey();//getting unique id
+        user = new User(id,name,password);
+        rDatabase.child("users").child(name).setValue(user);
+        //...
+
         Toast.makeText(getApplicationContext(),name+", welcome!",Toast.LENGTH_LONG).show();
     }
     public boolean checkUniqueness(String name){
