@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "254460176993",
+    "firebase_url": "https://autocrash-20efb-default-rtdb.europe-west1.firebasedatabase.app/",
+    "project_id": "autocrash-20efb",
+    "storage_bucket": "autocrash-20efb.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:254460176993:android:6bd77110242a243a5f1820",
+        "android_client_info": {
+          "package_name": "com.orkun.autocrashhistory"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "254460176993-divmositacan4ln6statdpr1ep24s3ta.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB8G0sIZAsx5ys0b_AFfDSqqF2Q3rQA3HQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "254460176993-divmositacan4ln6statdpr1ep24s3ta.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
