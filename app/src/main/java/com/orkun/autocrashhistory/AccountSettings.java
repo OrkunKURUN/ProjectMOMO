@@ -10,17 +10,23 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+
 public class AccountSettings extends AppCompatActivity {
 
     private String name;
     private String password;
     private String password2;
     private carDatabase dbManager = new carDatabase(this);
+    private DatabaseReference rDatabase;
     MainActivity firstMenu = new MainActivity();
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.account_settings);
+
+        rDatabase = FirebaseDatabase.getInstance().getReference();
 
         EditText nameInput = (EditText) findViewById(R.id.newUsername2);
         EditText passwordInput = (EditText) findViewById(R.id.newPassword2);
@@ -79,4 +85,5 @@ public class AccountSettings extends AppCompatActivity {
         db.execSQL("UPDATE Users SET password = '"+password+"' WHERE name = '"+firstMenu.getNameActive()+"'");
         firstMenu.setPasswordActive(password);
     }
+
 }

@@ -1,18 +1,23 @@
 package com.orkun.autocrashhistory;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+
+import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -22,13 +27,13 @@ public class MainActivity extends AppCompatActivity {
     public static String nameActive;
     public static String passwordActive;
     private DatabaseReference rDatabase;
+    private User user;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        rDatabase = FirebaseDatabase.getInstance().getReference();
 
         Button signup = (Button) findViewById(R.id.signUpButton);
         Button signin = (Button) findViewById(R.id.signInButton);
@@ -39,6 +44,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent i = new Intent(getApplicationContext(),SignUp.class);
+
                 startActivity(i);
             }
         });
@@ -50,27 +56,43 @@ public class MainActivity extends AppCompatActivity {
                 name = nameInput.getText().toString();
                 password = passwordInput.getText().toString();
 
-                if(check(name,password)){
-                    setNameActive(name);
-                    setPasswordActive(password);
-                    startActivity(i);
-                }
-                else {
-                    Toast.makeText(getApplicationContext(),"Username and password may be wrong!",Toast.LENGTH_LONG).show();
-                }
+                rDatabase = FirebaseDatabase.getInstance().getReference().child("users").child(name);
+
+                /*try {
+                    if(check(name,password)){
+                        setNameActive(name);
+                        setPasswordActive(password);
+                        startActivity(i);
+                    }
+                    else {
+                        Toast.makeText(getApplicationContext(),"Username and password may be wrong!",Toast.LENGTH_LONG).show();
+                    }
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }*/
+
+                ValueEventListener userListener = new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        User user = snapshot.getValue(User.class);
+                        if(user == null)
+                            Toast.makeText(getApplicationContext(),"User not found!",Toast.LENGTH_SHORT).show();
+                        else if(!password.equals(user.getPassword()))
+                            Toast.makeText(getApplicationContext(),"Wrong password!",Toast.LENGTH_SHORT).show();
+                        else
+                            startActivity(i);
+
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+                        Log.w("TAG","loadPost:onCancelled", error.toException());
+                    }
+                };
+
+                rDatabase.addValueEventListener(userListener);
             }
         });
-    }
-
-    private boolean check(String name, String password) {
-        SQLiteDatabase db = dbManager.getReadableDatabase();
-        String query = "SELECT * FROM Users WHERE name = '" + name + "' AND password = '"+password+"'";
-        Cursor cursor = db.rawQuery(query, null);
-
-        if (cursor.getCount() == 0) {
-            return false;
-        }
-        return true;
     }
 
     public String getNameActive() {
