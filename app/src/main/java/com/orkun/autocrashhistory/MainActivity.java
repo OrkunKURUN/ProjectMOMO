@@ -26,8 +26,8 @@ public class MainActivity extends AppCompatActivity {
     private final carDatabase dbManager = new carDatabase(this);
     public static String nameActive;
     public static String passwordActive;
+    public static String idActive;
     private DatabaseReference rDatabase;
-    private User user;
 
 
     @Override
@@ -58,19 +58,6 @@ public class MainActivity extends AppCompatActivity {
 
                 rDatabase = FirebaseDatabase.getInstance().getReference().child("users").child(name);
 
-                /*try {
-                    if(check(name,password)){
-                        setNameActive(name);
-                        setPasswordActive(password);
-                        startActivity(i);
-                    }
-                    else {
-                        Toast.makeText(getApplicationContext(),"Username and password may be wrong!",Toast.LENGTH_LONG).show();
-                    }
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }*/
-
                 ValueEventListener userListener = new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -80,6 +67,9 @@ public class MainActivity extends AppCompatActivity {
                         else if(!password.equals(user.getPassword()))
                             Toast.makeText(getApplicationContext(),"Wrong password!",Toast.LENGTH_SHORT).show();
                         else
+                            setNameActive(name);
+                            setPasswordActive(password);
+                            setIdActive(user.getUserId());
                             startActivity(i);
 
                     }
@@ -109,5 +99,13 @@ public class MainActivity extends AppCompatActivity {
 
     public void setPasswordActive(String passwordActive) {
         this.passwordActive = passwordActive;
+    }
+
+    public static String getIdActive() {
+        return idActive;
+    }
+
+    public static void setIdActive(String idActive) {
+        MainActivity.idActive = idActive;
     }
 }
