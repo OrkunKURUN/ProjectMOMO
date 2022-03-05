@@ -19,7 +19,7 @@ public class AddRecord extends AppCompatActivity {
     private String url;
     MainActivity firstMenu = new MainActivity();
     carDatabase dbManager = new carDatabase(this);
-    private DatabaseReference rDatabase = FirebaseDatabase.getInstance().getReference();
+    private DatabaseReference rDatabase;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -40,8 +40,6 @@ public class AddRecord extends AppCompatActivity {
     }
     public void add_record(String vin, String url) {
         SQLiteDatabase db = dbManager.getWritableDatabase();
-        PictureURL Precord = null;
-        CarRecord Crecord = null;
         int id = 0;
 
         Cursor cursor = db.rawQuery("SELECT user_id FROM Users WHERE name = '" + firstMenu.getNameActive() + "'", null);
@@ -49,19 +47,13 @@ public class AddRecord extends AppCompatActivity {
             id = cursor.getInt(0);
         }
         cursor.close();
+
         cursor = db.rawQuery("SELECT * FROM CarRecords WHERE vin = '" + vin + "' AND user_id = "+id, null);
         if (cursor.getCount() == 0) {
             db.execSQL("INSERT INTO CarRecords(user_id, vin) VALUES (" + id + ",'" + vin + "')");
-            //pushing to Firebase database:
-            Cursor c = db.rawQuery("SELECT * FROM CarRecords WHERE vin = '" + vin + "' AND user_id = "+id,null);
-            if(c.moveToFirst()){
-                Crecord = new CarRecord(c.getInt(0),c.getInt(1),c.getString(2));
-            }
-            c.close();
         }
         cursor.close();
-        rDatabase.child("carRecord").child(String.valueOf(Crecord.recordId)).setValue(Crecord);
-        //...
+
         cursor = db.rawQuery("SELECT record_id FROM CarRecords WHERE vin = '" + vin + "'", null);
         if (cursor.moveToFirst()) {
             id = cursor.getInt(0);
@@ -70,15 +62,15 @@ public class AddRecord extends AppCompatActivity {
         cursor = db.rawQuery("SELECT * FROM PictureURL WHERE url = '" + url + "'", null);
         if (cursor.getCount() == 0) {
             db.execSQL("INSERT INTO PictureURL(record_id, url) VALUES (" + id + ",'" + url + "')");
-            //pushing to Firebase database:
-            Cursor c = db.rawQuery("SELECT * FROM PictureURL WHERE url = '" + url + "'",null);
-            if(c.moveToFirst()){
-                Precord = new PictureURL(c.getInt(0),c.getInt(1),c.getString(2));
-            }
-            c.close();
         }
         cursor.close();
-        rDatabase.child("pictureUrlRecord").child(String.valueOf(Precord.urlId)).setValue(Precord);
+
+        //Writing on remote database:
+        rDatabase = FirebaseDatabase.getInstance().getReference().child("car-records").child(vin);
+        String urlId = rDatabase.push().getKey();
+        PictureURL url1 = new PictureURL(urlId, firstMenu.getNameActive(), url);
+
+        rDatabase.child(urlId).setValue(url1);
         //...
         Toast.makeText(getApplicationContext(),"New record added!",Toast.LENGTH_SHORT).show();
     }

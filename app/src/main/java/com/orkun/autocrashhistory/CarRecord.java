@@ -1,22 +1,21 @@
 package com.orkun.autocrashhistory;
 
 public class CarRecord {
-    public int recordId, userId;
-    public String vin;
+    public String vin, recordId, userName;
 
     public CarRecord(){}
 
-    public CarRecord(int recordId, int userId, String vin){
+    public CarRecord(String userName, String recordId, String vin){
         this.recordId = recordId;
-        this.userId = userId;
+        this.userName = userName;
         this.vin = vin;
     }
 
-    public int getUserId() {
-        return userId;
+    public String getUserName() {
+        return userName;
     }
 
-    public int getRecordId() {
+    public String getRecordId() {
         return recordId;
     }
 

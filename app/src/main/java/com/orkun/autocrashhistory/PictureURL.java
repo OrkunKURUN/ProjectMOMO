@@ -1,23 +1,22 @@
 package com.orkun.autocrashhistory;
 
 public class PictureURL {
-    public int urlId, recordId;
-    public String url;
+    public String url, urlId, userName;
 
     public PictureURL(){}
 
-    public PictureURL(int urlId, int recordId, String url){
+    public PictureURL(String urlId, String userName, String url){
         this.urlId = urlId;
-        this.recordId = recordId;
+        this.userName = userName;
         this.url = url;
     }
 
-    public int getUrlId() {
+    public String getUrlId() {
         return urlId;
     }
 
-    public int getRecordId() {
-        return recordId;
+    public String getUserName() {
+        return userName;
     }
 
     public String getUrl() {
