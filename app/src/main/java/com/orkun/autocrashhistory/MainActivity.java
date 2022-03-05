@@ -11,6 +11,8 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -58,29 +60,28 @@ public class MainActivity extends AppCompatActivity {
 
                 rDatabase = FirebaseDatabase.getInstance().getReference().child("users").child(name);
 
-                ValueEventListener userListener = new ValueEventListener() {
+                rDatabase.get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
                     @Override
-                    public void onDataChange(@NonNull DataSnapshot snapshot) {
-                        User user = snapshot.getValue(User.class);
-                        if(user == null)
-                            Toast.makeText(getApplicationContext(),"User not found!",Toast.LENGTH_SHORT).show();
-                        else if(!password.equals(user.getPassword()))
-                            Toast.makeText(getApplicationContext(),"Wrong password!",Toast.LENGTH_SHORT).show();
-                        else
-                            setNameActive(name);
-                            setPasswordActive(password);
-                            setIdActive(user.getUserId());
-                            startActivity(i);
+                    public void onComplete(@NonNull Task<DataSnapshot> task) {
+                        if (!task.isSuccessful()) {
+                            Log.e("firebase", "Error getting data", task.getException());
+                        }
+                        else {
+                            User user = task.getResult().getValue(User.class);
 
+                            if(user == null)
+                                Toast.makeText(getApplicationContext(),"User not found!",Toast.LENGTH_SHORT).show();
+                            else if(!password.equals(user.getPassword()))
+                                Toast.makeText(getApplicationContext(),"Wrong password!",Toast.LENGTH_SHORT).show();
+                            else{
+                                setNameActive(name);
+                                setPasswordActive(password);
+                                setIdActive(user.getUserId());
+                                startActivity(i);
+                            }
+                        }
                     }
-
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError error) {
-                        Log.w("TAG","loadPost:onCancelled", error.toException());
-                    }
-                };
-
-                rDatabase.addValueEventListener(userListener);
+                });
             }
         });
     }

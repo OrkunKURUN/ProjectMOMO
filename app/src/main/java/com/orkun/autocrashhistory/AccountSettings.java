@@ -1,17 +1,25 @@
 package com.orkun.autocrashhistory;
 
+import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 public class AccountSettings extends AppCompatActivity {
 
@@ -34,17 +42,33 @@ public class AccountSettings extends AppCompatActivity {
         Button nameSubmit = (Button) findViewById(R.id.changeName);
         Button passwordSubmit = (Button) findViewById(R.id.changePassword);
 
+        rDatabase = FirebaseDatabase.getInstance().getReference();
+
         nameSubmit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 name = nameInput.getText().toString();
-                if(!checkUniqueness(name)){
-                    Toast.makeText(getApplicationContext(),"Name not unique!",Toast.LENGTH_SHORT).show();
-                }
-                else{
-                    changeName(name);
-                    Toast.makeText(getApplicationContext(),"New user name: "+name,Toast.LENGTH_LONG).show();
-                }
+
+                rDatabase.child("users").child(name).get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DataSnapshot> task) {
+                        if (!task.isSuccessful()) {
+                            Log.e("firebase", "Error getting data", task.getException());
+                        }
+                        else {
+                            User user = task.getResult().getValue(User.class);
+                            if(user != null)
+                                Toast.makeText(getApplicationContext(),"Name not unique!",Toast.LENGTH_SHORT).show();
+                            else{
+                                user = new User(firstMenu.getIdActive(),name,firstMenu.getPasswordActive());
+                                rDatabase.child("users").child(name).setValue(user);
+                                rDatabase.child("users").child(firstMenu.getNameActive()).removeValue();
+                                changeName(name);
+                                Toast.makeText(getApplicationContext(),"New user name: "+name,Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                    }
+                });
             }
         });
 
@@ -58,21 +82,23 @@ public class AccountSettings extends AppCompatActivity {
                 }
                 else{
                     changePassword(password);
+                    rDatabase.child("users").child(firstMenu.getNameActive()).get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
+                        @Override
+                        public void onComplete(@NonNull Task<DataSnapshot> task) {
+                            if (!task.isSuccessful()) {
+                                Log.e("firebase", "Error getting data", task.getException());
+                            }
+                            else{
+                                User user = task.getResult().getValue(User.class);
+                                user.setPassword(password);
+                                rDatabase.child("users").child(firstMenu.getNameActive()).setValue(user);
+                            }
+                        }
+                    });
                     Toast.makeText(getApplicationContext(),"Your password changed!",Toast.LENGTH_LONG).show();
                 }
             }
         });
-    }
-
-    public boolean checkUniqueness(String name){
-        SQLiteDatabase db = dbManager.getReadableDatabase();
-        String query = "SELECT * FROM Users WHERE name = '" + name + "';";
-        Cursor cursor = db.rawQuery(query, null);
-
-        if (cursor.getCount() != 0) {
-            return false;
-        }
-        return true;
     }
     public void changeName(String name){
         System.out.println(firstMenu.getNameActive());
