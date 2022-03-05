@@ -3,6 +3,7 @@ package com.orkun.autocrashhistory;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -10,7 +11,14 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 
@@ -21,6 +29,9 @@ public class SearchRecord extends AppCompatActivity {
     private carDatabase dbManager = new carDatabase(this);
     private String vin;
     private String recordId;
+    private DatabaseReference rDatabase;
+    TextView idList, namePlace;
+    WebView url;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -28,11 +39,11 @@ public class SearchRecord extends AppCompatActivity {
 
         EditText vinInput = (EditText) findViewById(R.id.vinInput2);
         Button recordSearch = (Button) findViewById(R.id.recordSearch);
-        TextView idList = (TextView) findViewById(R.id.idList);
+        idList = (TextView) findViewById(R.id.idList);
         EditText recordInput = (EditText) findViewById(R.id.recordIdInput);
         Button lookAtRecord = (Button) findViewById(R.id.lookAtRecord);
-        WebView url = (WebView) findViewById(R.id.recordPicture);
-        TextView namePlace = (TextView) findViewById(R.id.namePlace);
+        url = (WebView) findViewById(R.id.recordPicture);
+        namePlace = (TextView) findViewById(R.id.namePlace);
 
         url.getSettings().setJavaScriptEnabled(true);
 
@@ -40,47 +51,52 @@ public class SearchRecord extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 vin = vinInput.getText().toString();
-                idList.setText(makeList(vin));
+                makeList();
             }
         });
         lookAtRecord.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 recordId = recordInput.getText().toString();
-                int id = Integer.parseInt(recordId);
+                //int id = Integer.parseInt(recordId);
                 url.setWebViewClient(new WebViewClient());
-                url.loadUrl(getURL(id));
-                namePlace.setText("Uploaded by: "+getUserName(id));
+                //url.loadUrl(getURL(id));
+                getURL(recordId);
+                //namePlace.setText("Uploaded by: "+getUserName(id));
             }
         });
     }
 
-    public String makeList(String vin){
+    public void makeList(){
         String list = "";
-        ArrayList<Integer> data = new ArrayList<>();
-        int recordId = 0, count, i;
-        SQLiteDatabase db = dbManager.getReadableDatabase();
 
-        Cursor cursor = db.rawQuery("SELECT record_id FROM CarRecords WHERE vin = '"+vin+"'",null);
-        while(cursor.moveToNext()){
-            data.add(cursor.getInt(0));
-        }
-        count = cursor.getCount();
-        cursor.close();
+        rDatabase = FirebaseDatabase.getInstance().getReference().child("car-records").child(vin);
 
-        for(i=0;i<count;++i){
-            recordId = data.get(i);
-            cursor = db.rawQuery("SELECT url_id FROM PictureURL WHERE record_id = "+recordId,null);
-            while (cursor.moveToNext()){
-                list = list + cursor.getInt(0) + "\n";
+        ValueEventListener recordListener = new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                ArrayList<String> list = new ArrayList<>();
+                String listToWrite = "";
+                for(DataSnapshot cSnapshot : dataSnapshot.getChildren()){
+                    PictureURL record = cSnapshot.getValue(PictureURL.class);
+                    list.add(record.getUrlId());
+                }
+                for(String id : list)
+                    listToWrite = listToWrite + id + "\n";
+                idList.setText(listToWrite);
             }
-            cursor.close();
-        }
 
-        return list;
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                // Getting Post failed, log a message
+                Log.w("TAG", "loadPost:onCancelled", databaseError.toException());
+            }
+        };
+        rDatabase.addValueEventListener(recordListener);
+
     }
-    public String getURL(int id){
-        SQLiteDatabase db = dbManager.getReadableDatabase();
+    public void getURL(String id){
+        /*SQLiteDatabase db = dbManager.getReadableDatabase();
         String url = "";
 
         Cursor cursor = db.rawQuery("SELECT url FROM PictureURL WHERE url_id = "+id,null);
@@ -89,7 +105,25 @@ public class SearchRecord extends AppCompatActivity {
         }
         cursor.close();
 
-        return url;
+        return url;*/
+        rDatabase = FirebaseDatabase.getInstance().getReference().child("car-records").child(vin).child(id);
+        ValueEventListener listener = new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                PictureURL record = snapshot.getValue(PictureURL.class);
+                if(record != null){
+                    namePlace.setText("Uploaded by: "+record.getUserName());
+                    url.loadUrl(record.getUrl());
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                // Getting Post failed, log a message
+                Log.w("TAG", "loadPost:onCancelled", error.toException());
+            }
+        };
+        rDatabase.addValueEventListener(listener);
     }
     public String getUserName(int id){
         SQLiteDatabase db = dbManager.getReadableDatabase();
