@@ -33,6 +33,7 @@ public class EditRecord extends AppCompatActivity {
     private DatabaseReference rDatabase;
     private TextView vinList, idList;
     private WebView url;
+    private EditText newUrl;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -46,7 +47,7 @@ public class EditRecord extends AppCompatActivity {
         EditText recordInput = (EditText) findViewById(R.id.recordIdInput2);
         Button lookAtRecord = (Button) findViewById(R.id.lookAtRecord2);
         url = (WebView) findViewById(R.id.recordPicture);
-        EditText newUrl = (EditText) findViewById(R.id.urlInput2);
+        newUrl = (EditText) findViewById(R.id.urlInput2);
         Button change = (Button) findViewById(R.id.changeButton);
         Button delete = (Button) findViewById(R.id.deleteButton);
 
@@ -72,18 +73,19 @@ public class EditRecord extends AppCompatActivity {
         change.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String url = newUrl.getText().toString();
-                int id = Integer.parseInt(recordId);
-                changeRecord(url, id);
+                //String url = newUrl.getText().toString();
+                //int id = Integer.parseInt(recordId);
+                //changeRecord(url, id);
+                changeRecord();
                 Toast.makeText(getApplicationContext(),"Record changed!",Toast.LENGTH_LONG).show();
             }
         });
         delete.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String url = newUrl.getText().toString();
+                //String url = newUrl.getText().toString();
                 //int id = Integer.parseInt(recordId);
-                deleteRecord(recordId);
+                deleteRecord();
                 Toast.makeText(getApplicationContext(),"Record deleted!",Toast.LENGTH_LONG).show();
                 //idList.setText(makeList(vin));
             }
@@ -137,7 +139,7 @@ public class EditRecord extends AppCompatActivity {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 ArrayList<String> id_nums = new ArrayList<>();
-                String list = "List of VIN numbers you recorded:\n";
+                String list = "List of ID numbers you recorded:\n";
                 for(DataSnapshot cSnapshot : snapshot.getChildren()){
                     PictureURL record = cSnapshot.getValue(PictureURL.class);
                     if(record.getUserName().equals(mainActivity.getNameActive()))
@@ -185,15 +187,30 @@ public class EditRecord extends AppCompatActivity {
         };
         rDatabase.addValueEventListener(listener);
     }
-    public void changeRecord(String url, int id){
-        SQLiteDatabase db = dbManager.getWritableDatabase();
-        db.execSQL("UPDATE PictureURL SET url = '"+url+"' WHERE url_id = "+id);
+    public void changeRecord(){
+        //SQLiteDatabase db = dbManager.getWritableDatabase();
+        //db.execSQL("UPDATE PictureURL SET url = '"+url+"' WHERE url_id = "+id);
+        rDatabase = FirebaseDatabase.getInstance().getReference().child("car-records").child(vin).child(recordId);
 
-
+        rDatabase.get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DataSnapshot> task) {
+                if (!task.isSuccessful()) {
+                    Log.e("firebase", "Error getting data", task.getException());
+                }
+                else{
+                    PictureURL record = task.getResult().getValue(PictureURL.class);
+                    if(record.getUserName().equals(mainActivity.getNameActive())){
+                        record.setUrl(newUrl.getText().toString());
+                        rDatabase.setValue(record);
+                    }
+                }
+            }
+        });
     }
-    public void deleteRecord(String id){
-        SQLiteDatabase db = dbManager.getWritableDatabase();
-        db.execSQL("DELETE FROM PictureURL WHERE url_id ="+id);
+    public void deleteRecord(){
+        //SQLiteDatabase db = dbManager.getWritableDatabase();
+        //db.execSQL("DELETE FROM PictureURL WHERE url_id ="+id);
         rDatabase = FirebaseDatabase.getInstance().getReference().child("car-records").child(vin).child(recordId);
 
         rDatabase.get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
