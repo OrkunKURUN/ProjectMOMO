@@ -30,8 +30,8 @@ public class SearchRecord extends AppCompatActivity {
     private String vin;
     private String recordId;
     private DatabaseReference rDatabase;
-    TextView idList, namePlace;
-    WebView url;
+    private TextView idList, namePlace;
+    private WebView url;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
